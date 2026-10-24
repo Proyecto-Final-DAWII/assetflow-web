@@ -1,0 +1,30 @@
+.topbar { position: fixed; z-index: 400; top: 0; right: 0; left: var(--sidebar-width); display: flex; align-items: center; gap: 1rem; height: var(--topbar-height); padding: 0 1.5rem; border-bottom: 1px solid rgba(218, 224, 233, 0.8); background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(14px); transition: left 180ms ease; }
+.topbar__menu { display: none; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; border: 1px solid var(--color-border); border-radius: 0.7rem; color: var(--color-text); background: var(--color-surface); cursor: pointer; }
+.topbar__search { display: flex; flex: 1; align-items: center; gap: 0.65rem; max-width: 580px; height: 2.55rem; padding: 0 0.82rem; border: 1px solid var(--color-border); border-radius: 0.75rem; color: var(--color-text-muted); background: #f8fafc; transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease; }
+.topbar__search:focus-within { border-color: var(--color-primary-soft); box-shadow: 0 0 0 3px var(--color-primary-subtle); background: #fff; }
+.topbar__search input { flex: 1; min-width: 0; border: 0; outline: 0; color: var(--color-text-strong); background: transparent; font: inherit; font-size: 0.82rem; }
+.topbar__search input::placeholder { color: #9ba5b4; }
+.topbar__shortcut { padding: 0.12rem 0.4rem; border: 1px solid #dfe3e9; border-radius: 0.35rem; color: #8a94a4; font-size: 0.72rem; background: #fff; }
+.topbar__actions { display: flex; align-items: center; gap: 0.7rem; margin-left: auto; }
+.topbar__icon-button { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 2.45rem; height: 2.45rem; border: 1px solid var(--color-border); border-radius: 0.75rem; color: var(--color-text-muted); background: var(--color-surface); text-decoration: none; }
+.topbar__icon-button:hover { color: var(--color-primary); border-color: var(--color-primary-soft); background: var(--color-primary-subtle); }
+.topbar__notification-count { position: absolute; top: -0.32rem; right: -0.28rem; display: inline-flex; align-items: center; justify-content: center; min-width: 1.16rem; height: 1.16rem; padding: 0 0.2rem; border: 2px solid #fff; border-radius: 999px; color: #fff; font-size: 0.58rem; font-weight: 800; background: var(--color-danger); }
+.topbar__profile { position: relative; }
+.topbar__profile-button { display: flex; align-items: center; gap: 0.65rem; min-width: 190px; padding: 0.3rem 0.5rem; border: 0; border-radius: 0.75rem; color: var(--color-text); background: transparent; cursor: pointer; text-align: left; }
+.topbar__profile-button:hover { background: #f5f7fa; }
+.topbar__avatar { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 2.15rem; height: 2.15rem; border-radius: 50%; color: #fff; font-size: 0.82rem; font-weight: 800; background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); }
+.topbar__profile-copy { flex: 1; min-width: 0; }
+.topbar__profile-copy strong, .topbar__profile-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar__profile-copy strong { color: var(--color-text-strong); font-size: 0.77rem; }
+.topbar__profile-copy small { margin-top: 0.13rem; color: var(--color-text-muted); font-size: 0.66rem; }
+.topbar__profile-menu { position: absolute; top: calc(100% + 0.55rem); right: 0; width: 245px; overflow: hidden; border: 1px solid var(--color-border); border-radius: 0.85rem; box-shadow: var(--shadow-lg); background: #fff; }
+.topbar__profile-card { padding: 0.9rem; border-bottom: 1px solid var(--color-border); }
+.topbar__profile-card strong, .topbar__profile-card span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar__profile-card strong { color: var(--color-text-strong); font-size: 0.82rem; }
+.topbar__profile-card span { margin-top: 0.2rem; color: var(--color-text-muted); font-size: 0.72rem; }
+.topbar__profile-menu button { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.75rem 0.9rem; border: 0; color: var(--color-danger); background: #fff; font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.topbar__profile-menu button:hover { background: #fff5f6; }
+
+@media (max-width: 960px) { .topbar { left: 0; } .topbar__menu { display: inline-flex; } }
+@media (max-width: 720px) { .topbar { padding: 0 0.85rem; } .topbar__search { max-width: none; } .topbar__profile-copy, .topbar__profile-button > af-icon { display: none; } .topbar__profile-button { min-width: auto; padding: 0.25rem; } }
+@media (max-width: 520px) { .topbar__search { height: 2.35rem; } .topbar__shortcut { display: none; } }

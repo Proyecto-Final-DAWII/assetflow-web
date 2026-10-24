@@ -1,0 +1,10 @@
+<div class="app-shell">
+  <af-sidebar [open]="sidebarOpen()" (closeRequested)="sidebarOpen.set(false)" />
+  @if (sidebarOpen()) {
+    <button class="app-shell__overlay" type="button" aria-label="Cerrar navegación" (click)="sidebarOpen.set(false)"></button>
+  }
+  <af-topbar (menuRequested)="sidebarOpen.set(true)" />
+  <main class="app-shell__content" id="main-content">
+    <router-outlet />
+  </main>
+</div>

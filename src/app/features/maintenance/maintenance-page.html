@@ -1,0 +1,54 @@
+<af-page-header eyebrow="Soporte" title="Mantenimientos" subtitle="Planifica intervenciones preventivas y correctivas sin perder la trazabilidad del activo.">
+  <button page-actions type="button" class="button button--primary" (click)="formOpen.set(!formOpen())"><af-icon [name]="formOpen() ? 'x' : 'plus'" [size]="17" /> {{ formOpen() ? 'Cerrar' : 'Programar mantenimiento' }}</button>
+</af-page-header>
+
+<section class="maintenance-metrics">
+  <article><span class="tone-info"><af-icon name="calendar" [size]="20" /></span><div><strong>{{ scheduledCount() }}</strong><small>Programados</small></div></article>
+  <article><span class="tone-warning"><af-icon name="wrench" [size]="20" /></span><div><strong>{{ inProgressCount() }}</strong><small>En curso</small></div></article>
+  <article><span class="tone-success"><af-icon name="check" [size]="20" /></span><div><strong>{{ completedCount() }}</strong><small>Completados</small></div></article>
+  <article><span class="tone-danger"><af-icon name="alert-triangle" [size]="20" /></span><div><strong>{{ criticalCount() }}</strong><small>Prioridad crítica</small></div></article>
+</section>
+
+@if (formOpen()) {
+  <section class="card maintenance-form">
+    <header><span><af-icon name="wrench" [size]="21" /></span><div><h2>Nueva orden de mantenimiento</h2><p>Define el tipo de intervención, prioridad y fecha programada.</p></div></header>
+    <form [formGroup]="form" (ngSubmit)="create()">
+      <div class="form-grid">
+        <label class="field field--wide"><span>Activo <b>*</b></span><select formControlName="assetId"><option value="">Selecciona un activo</option>@for (asset of assets(); track asset.id) { <option [value]="asset.id">{{ asset.code }} · {{ asset.name }}</option> }</select></label>
+        <label class="field"><span>Tipo <b>*</b></span><select formControlName="type"><option value="PREVENTIVE">Preventivo</option><option value="CORRECTIVE">Correctivo</option></select></label>
+        <label class="field"><span>Prioridad <b>*</b></span><select formControlName="priority"><option value="LOW">Baja</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option><option value="CRITICAL">Crítica</option></select></label>
+        <label class="field field--wide"><span>Título <b>*</b></span><input type="text" formControlName="title" placeholder="Mantenimiento preventivo trimestral"></label>
+        <label class="field"><span>Fecha programada <b>*</b></span><input type="date" formControlName="scheduledAt"></label>
+        <label class="field"><span>Proveedor o técnico</span><input type="text" formControlName="provider" placeholder="Soporte interno"></label>
+        <label class="field field--full"><span>Descripción <b>*</b></span><textarea rows="3" formControlName="description" placeholder="Actividades, diagnóstico esperado y alcance..."></textarea></label>
+      </div>
+      <footer><button type="button" class="button button--secondary" (click)="formOpen.set(false)">Cancelar</button><button type="submit" class="button button--primary" [disabled]="saving()"><af-icon name="check" [size]="17" /> {{ saving() ? 'Guardando...' : 'Programar orden' }}</button></footer>
+    </form>
+  </section>
+}
+
+<section class="card maintenance-list">
+  <header class="list-header"><div><h2>Órdenes de mantenimiento</h2><p>Seguimiento operativo y costos asociados</p></div><label class="filter-select"><af-icon name="filter" [size]="16" /><select [value]="statusFilter()" (change)="changeFilter($event)"><option value="">Todos los estados</option><option value="SCHEDULED">Programados</option><option value="IN_PROGRESS">En curso</option><option value="COMPLETED">Completados</option><option value="CANCELLED">Cancelados</option></select></label></header>
+  @if (error()) {
+    <af-empty-state icon="alert-triangle" title="No se pudieron cargar las órdenes" [message]="error() ?? ''"><button type="button" class="button button--primary" (click)="load()">Reintentar</button></af-empty-state>
+  } @else if (loading()) {
+    <div class="list-skeleton">@for (item of [1,2,3,4,5]; track item) { <span></span> }</div>
+  } @else if (filteredItems().length === 0) {
+    <af-empty-state icon="wrench" title="No hay mantenimientos" message="No existen órdenes que coincidan con el filtro seleccionado." />
+  } @else {
+    <div class="maintenance-cards">
+      @for (item of filteredItems(); track item.id) {
+        <article class="maintenance-item">
+          <div class="maintenance-item__top">
+            <a [routerLink]="['/assets', item.assetId]" class="maintenance-item__asset"><span><af-icon name="laptop" [size]="20" /></span><div><strong>{{ item.assetName }}</strong><small>{{ item.assetCode }}</small></div></a>
+            <af-status-badge [status]="item.status" />
+          </div>
+          <h3>{{ item.title }}</h3><p>{{ item.description }}</p>
+          <div class="maintenance-item__tags"><span>{{ typeLabels[item.type] }}</span><af-status-badge [status]="item.priority" [label]="priorityLabels[item.priority]" /></div>
+          <dl><div><dt>Fecha</dt><dd>{{ formatDate(item.scheduledAt) }}</dd></div><div><dt>Responsable</dt><dd>{{ item.technician || item.provider || 'Por asignar' }}</dd></div><div><dt>Costo</dt><dd>{{ formatMoney(item.cost, item.currency) }}</dd></div></dl>
+          <footer><span>Orden {{ item.id.toUpperCase() }}</span>@if (item.status === 'IN_PROGRESS' || item.status === 'SCHEDULED') { <button type="button" class="button button--small button--secondary" (click)="complete(item)"><af-icon name="check" [size]="15" /> Marcar completado</button> }</footer>
+        </article>
+      }
+    </div>
+  }
+</section>

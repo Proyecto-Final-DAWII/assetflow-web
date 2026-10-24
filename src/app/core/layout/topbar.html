@@ -1,0 +1,47 @@
+<header class="topbar">
+  <button type="button" class="topbar__menu" (click)="menuRequested.emit()" aria-label="Abrir navegación">
+    <af-icon name="menu" [size]="22" />
+  </button>
+
+  <form class="topbar__search" role="search" (submit)="search($event)">
+    <af-icon name="search" [size]="18" />
+    <input name="globalSearch" type="search" placeholder="Buscar código, serie, marca o activo..." aria-label="Buscar activos">
+    <span class="topbar__shortcut" aria-hidden="true">↵</span>
+  </form>
+
+  <div class="topbar__actions">
+    @if (canSeeAlerts()) {
+      <a class="topbar__icon-button" routerLink="/alerts" aria-label="Ver alertas">
+        <af-icon name="bell" [size]="20" />
+        @if (isMockMode() && demoDb.unreadAlerts() > 0) {
+          <span class="topbar__notification-count">{{ demoDb.unreadAlerts() }}</span>
+        }
+      </a>
+    }
+
+    @if (session.user(); as user) {
+      <div class="topbar__profile">
+        <button type="button" class="topbar__profile-button" (click)="toggleProfile()" [attr.aria-expanded]="profileOpen()">
+          <span class="topbar__avatar">{{ user.fullName.charAt(0) }}</span>
+          <span class="topbar__profile-copy">
+            <strong>{{ user.fullName }}</strong>
+            <small>{{ user.area }}</small>
+          </span>
+          <af-icon name="chevron-down" [size]="16" />
+        </button>
+        @if (profileOpen()) {
+          <div class="topbar__profile-menu">
+            <div class="topbar__profile-card">
+              <strong>{{ user.fullName }}</strong>
+              <span>{{ user.email }}</span>
+            </div>
+            <button type="button" (click)="logout()" [disabled]="loggingOut()">
+              <af-icon name="log-out" [size]="17" />
+              {{ loggingOut() ? 'Cerrando...' : 'Cerrar sesión' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</header>

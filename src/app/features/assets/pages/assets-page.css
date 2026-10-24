@@ -1,0 +1,36 @@
+:host { display: block; }
+.asset-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.1rem; }
+.asset-summary article { display: flex; align-items: center; gap: .75rem; padding: .85rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-xs); background: var(--color-surface); }
+.asset-summary article > span { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: .7rem; color: var(--color-primary); background: var(--color-primary-subtle); }
+.asset-summary strong, .asset-summary small { display: block; }
+.asset-summary strong { color: var(--color-text-strong); font-size: 1rem; }
+.asset-summary small { margin-top: .12rem; color: var(--color-text-muted); font-size: .63rem; }
+.assets-card { overflow: hidden; }
+.assets-toolbar { display: flex; align-items: center; gap: .65rem; padding: 1rem; border-bottom: 1px solid var(--color-border); }
+.search-control { display: flex; flex: 1; align-items: center; gap: .55rem; min-width: 220px; max-width: 520px; height: 2.55rem; padding: 0 .75rem; border: 1px solid var(--color-border); border-radius: .7rem; color: var(--color-text-muted); background: #fafbfc; }
+.search-control:focus-within { border-color: var(--color-primary-soft); box-shadow: 0 0 0 3px var(--color-primary-subtle); background: #fff; }
+.search-control input { flex: 1; min-width: 0; border: 0; outline: 0; color: var(--color-text-strong); background: transparent; font: inherit; font-size: .78rem; }
+.select-control { display: flex; align-items: center; gap: .45rem; height: 2.55rem; padding: 0 .65rem; border: 1px solid var(--color-border); border-radius: .7rem; color: var(--color-text-muted); background: #fff; }
+.select-control select { min-width: 135px; border: 0; outline: 0; appearance: none; color: var(--color-text); background: transparent; font: inherit; font-size: .72rem; font-weight: 650; cursor: pointer; }
+.table-responsive { overflow-x: auto; }
+table { width: 100%; min-width: 1050px; border-collapse: collapse; }
+th { padding: .72rem 1rem; color: #7a8596; background: #fafbfc; font-size: .64rem; font-weight: 800; letter-spacing: .055em; text-align: left; text-transform: uppercase; }
+td { padding: .82rem 1rem; border-top: 1px solid var(--color-border); color: var(--color-text); font-size: .72rem; vertical-align: middle; }
+tbody tr { transition: background 120ms ease; }
+tbody tr:hover { background: #fbfbfe; }
+.asset-cell { display: flex; align-items: center; gap: .7rem; min-width: 220px; color: inherit; text-decoration: none; }
+.asset-cell__icon { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; border-radius: .72rem; color: var(--color-primary); background: var(--color-primary-subtle); }
+.asset-cell strong, .asset-cell small, .owner-cell strong, .owner-cell small { display: block; }
+.asset-cell strong { color: var(--color-text-strong); font-size: .75rem; }
+.asset-cell small, .owner-cell small { margin-top: .18rem; color: var(--color-text-muted); font-size: .62rem; }
+.category-text { color: var(--color-text); font-weight: 650; }
+code { padding: .28rem .42rem; border-radius: .35rem; color: #515b6c; background: #f2f4f7; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .65rem; }
+.owner-cell strong { color: var(--color-text-strong); font-size: .7rem; }
+.date-cell { white-space: nowrap; }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 1px solid var(--color-border); border-radius: .55rem; color: var(--color-text-muted); background: #fff; text-decoration: none; }
+.icon-button:hover { color: var(--color-primary); border-color: var(--color-primary-soft); background: var(--color-primary-subtle); }
+.table-skeleton { display: grid; gap: .7rem; padding: 1rem; }
+.table-skeleton span { height: 3.6rem; border-radius: .65rem; background: linear-gradient(90deg, #edf0f4 25%, #f7f8fa 37%, #edf0f4 63%); background-size: 400% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+@media (max-width: 1050px) { .asset-summary { grid-template-columns: repeat(2, 1fr); } .assets-toolbar { flex-wrap: wrap; } .search-control { max-width: none; } }
+@media (max-width: 620px) { .asset-summary { grid-template-columns: 1fr; } .search-control, .select-control { width: 100%; max-width: none; } .select-control select { flex: 1; } }

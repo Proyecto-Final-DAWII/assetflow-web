@@ -1,0 +1,5 @@
+:host { display: inline-flex; align-items: center; justify-content: center; }
+img { display: block; max-width: 100%; height: auto; border-radius: 0.75rem; }
+p { margin: 0; color: var(--color-danger); font-size: 0.82rem; }
+.qr-skeleton { display: block; border-radius: 0.75rem; background: linear-gradient(90deg, #eef1f5 25%, #f7f8fa 37%, #eef1f5 63%); background-size: 400% 100%; animation: shimmer 1.25s infinite; }
+@keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }

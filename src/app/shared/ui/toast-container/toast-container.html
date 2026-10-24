@@ -1,0 +1,14 @@
+<div class="toast-region" aria-live="polite" aria-relevant="additions removals">
+  @for (item of toast.items(); track item.id) {
+    <article [class]="'toast toast--' + item.tone">
+      <span class="toast__icon"><af-icon [name]="iconFor(item.tone)" [size]="18" /></span>
+      <div class="toast__copy">
+        <strong>{{ item.title }}</strong>
+        @if (item.message) { <p>{{ item.message }}</p> }
+      </div>
+      <button type="button" class="toast__close" (click)="toast.dismiss(item.id)" aria-label="Cerrar notificación">
+        <af-icon name="x" [size]="17" />
+      </button>
+    </article>
+  }
+</div>

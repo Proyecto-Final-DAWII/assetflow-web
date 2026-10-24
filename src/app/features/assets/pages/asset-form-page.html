@@ -1,0 +1,49 @@
+<af-page-header
+  eyebrow="Inventario"
+  [title]="isEdit ? 'Editar activo' : 'Registrar nuevo activo'"
+  [subtitle]="isEdit ? 'Actualiza la información y conserva la trazabilidad del registro.' : 'Completa los datos principales para incorporar el activo al inventario.'"
+>
+  <a page-actions class="button button--secondary" routerLink="/assets"><af-icon name="x" [size]="16" /> Cancelar</a>
+</af-page-header>
+
+@if (loading()) {
+  <div class="form-skeleton"><span></span><span></span></div>
+} @else if (loadError()) {
+  <section class="card"><af-empty-state icon="alert-triangle" title="No se pudo cargar el activo" [message]="loadError() ?? ''"><a class="button button--secondary" routerLink="/assets">Volver al inventario</a></af-empty-state></section>
+} @else {
+  <form class="asset-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <section class="card form-card">
+      <header class="form-card__header"><span><af-icon name="assets" [size]="21" /></span><div><h2>Identificación del activo</h2><p>Información utilizada para reconocer el equipo dentro de la organización.</p></div></header>
+      <div class="form-grid">
+        <label class="field"><span>Código interno <b>*</b></span><input type="text" formControlName="code" placeholder="AF-LAP-0001">@if (hasError('code')) { <small>El código interno es obligatorio.</small> }</label>
+        <label class="field field--wide"><span>Nombre descriptivo <b>*</b></span><input type="text" formControlName="name" placeholder="Dell Latitude 7450">@if (hasError('name')) { <small>Ingresa un nombre para el activo.</small> }</label>
+        <label class="field"><span>Categoría <b>*</b></span><select formControlName="category">@for (category of categories; track category) { <option [value]="category">{{ categoryLabels[category] }}</option> }</select></label>
+        <label class="field"><span>Marca <b>*</b></span><input type="text" formControlName="brand" placeholder="Dell">@if (hasError('brand')) { <small>La marca es obligatoria.</small> }</label>
+        <label class="field"><span>Modelo <b>*</b></span><input type="text" formControlName="model" placeholder="Latitude 7450">@if (hasError('model')) { <small>El modelo es obligatorio.</small> }</label>
+        <label class="field"><span>Número de serie <b>*</b></span><input type="text" formControlName="serialNumber" placeholder="DL-923812">@if (hasError('serialNumber')) { <small>El número de serie es obligatorio.</small> }</label>
+        <label class="field"><span>Estado inicial <b>*</b></span><select formControlName="status">@for (status of statuses; track status) { <option [value]="status">{{ statusLabels[status] }}</option> }</select></label>
+      </div>
+    </section>
+
+    <section class="card form-card">
+      <header class="form-card__header"><span><af-icon name="building" [size]="21" /></span><div><h2>Ubicación y compra</h2><p>Datos administrativos para control patrimonial y garantías.</p></div></header>
+      <div class="form-grid">
+        <label class="field field--wide"><span>Ubicación física <b>*</b></span><input type="text" formControlName="location" placeholder="Sede Central - Piso 8">@if (hasError('location')) { <small>La ubicación es obligatoria.</small> }</label>
+        <label class="field"><span>Área responsable</span><input type="text" formControlName="area" placeholder="Finanzas"></label>
+        <label class="field"><span>Fecha de adquisición <b>*</b></span><input type="date" formControlName="acquisitionDate">@if (hasError('acquisitionDate')) { <small>Selecciona la fecha de adquisición.</small> }</label>
+        <label class="field"><span>Fin de garantía</span><input type="date" formControlName="warrantyExpiresAt"></label>
+        <label class="field"><span>Valor de compra</span><div class="field__money"><select formControlName="currency" aria-label="Moneda"><option value="PEN">PEN</option><option value="USD">USD</option></select><input type="number" min="0" step="0.01" formControlName="purchasePrice" placeholder="0.00"></div></label>
+      </div>
+    </section>
+
+    <section class="card form-card">
+      <header class="form-card__header"><span><af-icon name="file" [size]="21" /></span><div><h2>Información adicional</h2><p>Observaciones internas relevantes para soporte y auditoría.</p></div></header>
+      <div class="form-grid"><label class="field field--full"><span>Notas internas</span><textarea formControlName="notes" rows="5" placeholder="Accesorios incluidos, condiciones especiales, observaciones..."></textarea><small class="field__counter">Máximo 800 caracteres</small></label></div>
+    </section>
+
+    <footer class="form-actions">
+      <p><af-icon name="info" [size]="16" /> Los cambios quedarán registrados en el historial de auditoría.</p>
+      <div><a class="button button--secondary" routerLink="/assets">Cancelar</a><button type="submit" class="button button--primary" [disabled]="saving()"><af-icon name="check" [size]="17" /> {{ saving() ? 'Guardando...' : (isEdit ? 'Guardar cambios' : 'Registrar activo') }}</button></div>
+    </footer>
+  </form>
+}

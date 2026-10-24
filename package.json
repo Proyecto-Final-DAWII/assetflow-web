@@ -1,0 +1,39 @@
+{
+  "name": "assetflow-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "build:development": "ng build --configuration development",
+    "test": "ng test",
+    "test:ci": "ng test --no-watch --no-progress",
+    "check": "npm run validate:config && npm run build && npm run test:ci",
+    "validate:config": "node scripts/validate-config.mjs",
+    "prebuild": "npm run validate:config"
+  },
+  "dependencies": {
+    "@angular/common": "22.2.3",
+    "@angular/compiler": "22.2.3",
+    "@angular/core": "22.2.3",
+    "@angular/forms": "22.2.3",
+    "@angular/platform-browser": "22.2.3",
+    "@angular/router": "22.2.3",
+    "qrcode": "^1.5.4",
+    "rxjs": "~7.8.2",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@angular/build": "22.2.3",
+    "@angular/cli": "22.2.3",
+    "@angular/compiler-cli": "22.2.3",
+    "@types/qrcode": "^1.5.5",
+    "jsdom": "^26.1.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=22.22.3"
+  }
+}

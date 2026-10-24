@@ -1,0 +1,53 @@
+<af-page-header
+  eyebrow="Centro de notificaciones"
+  title="Alertas"
+  subtitle="Prioriza garantias, mantenimientos, licencias e incidencias que requieren una accion del equipo de TI."
+>
+  <div page-actions>
+    <button type="button" class="button button--secondary" (click)="load()"><af-icon name="refresh" [size]="17" /> Actualizar</button>
+    <button type="button" class="button button--primary" [disabled]="unreadCount() === 0 || markingAll()" (click)="markAllRead()"><af-icon name="check" [size]="17" /> {{ markingAll() ? 'Actualizando...' : 'Marcar todas como leidas' }}</button>
+  </div>
+</af-page-header>
+
+<section class="alert-metrics" aria-label="Resumen de alertas">
+  <article><span class="tone-primary"><af-icon name="bell" [size]="20" /></span><div><strong>{{ unreadCount() }}</strong><small>Sin leer</small></div></article>
+  <article><span class="tone-danger"><af-icon name="alert-triangle" [size]="20" /></span><div><strong>{{ criticalCount() }}</strong><small>Criticas</small></div></article>
+  <article><span class="tone-warning"><af-icon name="clock" [size]="20" /></span><div><strong>{{ warningCount() }}</strong><small>Requieren atencion</small></div></article>
+  <article><span class="tone-info"><af-icon name="calendar" [size]="20" /></span><div><strong>{{ dueCount() }}</strong><small>Con vencimiento</small></div></article>
+</section>
+
+<section class="card alerts-panel">
+  <header class="alerts-toolbar">
+    <div><h2>Bandeja de alertas</h2><p>{{ filteredItems().length }} resultados</p></div>
+    <div class="alerts-toolbar__filters">
+      <label class="select-control"><span class="sr-only">Filtrar por tipo</span><af-icon name="filter" [size]="16" /><select [value]="typeFilter()" (change)="updateType($event)"><option value="">Todos los tipos</option><option value="WARRANTY">Garantias</option><option value="MAINTENANCE">Mantenimientos</option><option value="LICENSE">Licencias</option><option value="INCIDENT">Incidencias</option><option value="SYSTEM">Sistema</option></select></label>
+      <label class="select-control"><span class="sr-only">Filtrar por severidad</span><select [value]="severityFilter()" (change)="updateSeverity($event)"><option value="">Toda severidad</option><option value="CRITICAL">Criticas</option><option value="WARNING">Atencion</option><option value="INFO">Informativas</option></select></label>
+      <label class="toggle-control"><input type="checkbox" [checked]="unreadOnly()" (change)="unreadOnly.set($any($event.target).checked)"><span>Solo no leidas</span></label>
+    </div>
+  </header>
+
+  @if (error()) {
+    <af-empty-state icon="alert-triangle" title="No se pudieron cargar las alertas" [message]="error() ?? ''"><button type="button" class="button button--primary" (click)="load()">Reintentar</button></af-empty-state>
+  } @else if (loading()) {
+    <div class="alerts-skeleton">@for (row of [1,2,3,4,5]; track row) { <span></span> }</div>
+  } @else if (filteredItems().length === 0) {
+    <af-empty-state icon="bell" title="No hay alertas pendientes" message="No existen notificaciones que coincidan con los filtros seleccionados." />
+  } @else {
+    <div class="alerts-list">
+      @for (item of filteredItems(); track item.id) {
+        <article class="alert-item" [class.alert-item--unread]="!item.read">
+          <span [class]="'alert-item__icon alert-item__icon--' + item.severity.toLowerCase()"><af-icon [name]="icon(item.type)" [size]="20" /></span>
+          <div class="alert-item__content">
+            <div class="alert-item__eyebrow"><span>{{ typeLabels[item.type] }}</span><af-status-badge [status]="item.severity" [label]="severityLabels[item.severity]" /></div>
+            <h3>{{ item.title }}</h3><p>{{ item.message }}</p>
+            <div class="alert-item__meta"><span><af-icon name="history" [size]="14" /> {{ formatDateTime(item.createdAt) }}</span>@if (item.dueAt) { <strong><af-icon name="calendar" [size]="14" /> Vence {{ formatDate(item.dueAt) }}</strong> }</div>
+          </div>
+          <div class="alert-item__actions">
+            @if (item.route) { <a class="button button--small button--secondary" [routerLink]="item.route">Ver detalle <af-icon name="chevron-right" [size]="14" /></a> }
+            @if (!item.read) { <button type="button" class="icon-action" title="Marcar como leida" [disabled]="processingId() === item.id" (click)="markRead(item)"><af-icon name="check" [size]="17" /></button> } @else { <span class="read-label"><af-icon name="check" [size]="14" /> Leida</span> }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

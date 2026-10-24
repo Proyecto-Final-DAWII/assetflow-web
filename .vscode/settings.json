@@ -1,0 +1,9 @@
+{
+  "editor.formatOnSave": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "angular-schematics.schematicsDefaultOptions": {
+    "angular-*": {
+      "style": "css"
+    }
+  }
+}

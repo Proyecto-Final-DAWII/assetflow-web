@@ -1,0 +1,128 @@
+<af-page-header
+  eyebrow="Resumen ejecutivo"
+  title="Gestión de activos TI"
+  subtitle="Visibilidad consolidada del inventario, asignaciones, mantenimientos y próximos vencimientos."
+>
+  <div page-actions class="dashboard-header-actions">
+    <button type="button" class="button button--secondary" (click)="load()">
+      <af-icon name="refresh" [size]="17" /> Actualizar
+    </button>
+    @if (canManage()) {
+      <a class="button button--primary" routerLink="/assets/new">
+        <af-icon name="plus" [size]="17" /> Registrar activo
+      </a>
+    }
+  </div>
+</af-page-header>
+
+@if (loading() && !summary()) {
+  <div class="metric-grid" aria-label="Cargando indicadores">
+    @for (item of [1, 2, 3, 4, 5, 6]; track item) { <div class="metric-skeleton"></div> }
+  </div>
+  <div class="dashboard-skeleton"></div>
+} @else if (error()) {
+  <div class="card">
+    <af-empty-state icon="alert-triangle" title="No se pudo cargar el dashboard" [message]="error() ?? ''">
+      <button type="button" class="button button--primary" (click)="load()">Reintentar</button>
+    </af-empty-state>
+  </div>
+} @else if (summary(); as data) {
+  <section class="metric-grid" aria-label="Indicadores principales">
+    @for (metric of data.metrics; track metric.key) {
+      <a
+        class="metric-card"
+        [class]="'metric-card metric-card--' + metric.tone"
+        [routerLink]="metricRoute(metric.key)"
+        [attr.aria-label]="'Ver ' + metric.label"
+      >
+        <div class="metric-card__top">
+          <span class="metric-card__icon"><af-icon [name]="icon(metric.icon)" [size]="22" /></span>
+          @if (metric.change !== undefined) {
+            <span class="metric-card__change" [class.metric-card__change--negative]="metric.change < 0">
+              {{ metric.change > 0 ? '+' : '' }}{{ metric.change }}%
+            </span>
+          }
+        </div>
+        <strong>{{ metric.value.toLocaleString('es-PE') }}</strong>
+        <h2>{{ metric.label }}</h2>
+        @if (metric.helper) { <p>{{ metric.helper }}</p> }
+      </a>
+    }
+  </section>
+
+  <section class="dashboard-grid dashboard-grid--charts">
+    <article class="card chart-card">
+      <header class="card__header">
+        <div><h2>Activos por categoría</h2><p>Distribución de la muestra operativa</p></div>
+        <a routerLink="/assets">Ver inventario <af-icon name="chevron-right" [size]="15" /></a>
+      </header>
+      <div class="category-list">
+        @for (item of data.assetsByCategory; track item.key) {
+          <div class="category-row">
+            <span class="category-row__icon"><af-icon [name]="categoryIcon(item.key)" [size]="18" /></span>
+            <div class="category-row__copy"><strong>{{ item.label }}</strong><span>{{ item.value }} activos</span></div>
+            <div class="category-row__bar"><span [style.width.%]="item.percentage"></span></div>
+            <b>{{ item.percentage }}%</b>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="card chart-card">
+      <header class="card__header"><div><h2>Mantenimientos por mes</h2><p>Últimos seis meses</p></div><span class="chart-card__legend"><i></i> Órdenes</span></header>
+      <div class="bar-chart" aria-label="Gráfico de mantenimientos por mes">
+        @for (item of data.maintenanceByMonth; track item.month) {
+          <div class="bar-chart__column">
+            <span class="bar-chart__value">{{ item.total }}</span>
+            <div class="bar-chart__track"><span [style.height.%]="(item.total / maxMaintenance()) * 100"></span></div>
+            <small>{{ item.month }}</small>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-grid dashboard-grid--operations" [class.dashboard-grid--operations-compact]="!canManage()">
+    <article class="card status-card">
+      <header class="card__header"><div><h2>Estado del inventario</h2><p>Distribución actual</p></div></header>
+      <div class="status-overview">
+        @for (item of data.assetsByStatus; track item.key) {
+          <div class="status-overview__item">
+            <div class="status-overview__line"><af-status-badge [status]="item.key" /><strong>{{ item.value }}</strong></div>
+            <div class="status-overview__bar"><span [style.width.%]="item.percentage"></span></div>
+            <small>{{ item.percentage }}% de la muestra</small>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="card activity-card">
+      <header class="card__header"><div><h2>Actividad reciente</h2><p>Últimos movimientos registrados</p></div><a routerLink="/assets">Ver todo <af-icon name="chevron-right" [size]="15" /></a></header>
+      <div class="timeline">
+        @for (movement of data.recentMovements; track movement.id) {
+          <div class="timeline__item">
+            <span class="timeline__dot"><af-icon name="history" [size]="15" /></span>
+            <div><strong>{{ movement.title }}</strong><p>{{ movement.description }}</p><small>{{ formatDateTime(movement.occurredAt) }} · {{ movement.actor }}</small></div>
+          </div>
+        }
+      </div>
+    </article>
+
+    @if (canManage()) {
+      <article class="card alerts-card">
+        <header class="card__header"><div><h2>Próximos vencimientos</h2><p>Acciones que requieren atención</p></div><a routerLink="/alerts">Ver alertas <af-icon name="chevron-right" [size]="15" /></a></header>
+        <div class="alert-list">
+          @for (alert of data.upcomingAlerts; track alert.id) {
+            <a class="alert-row" [routerLink]="alert.route ?? '/alerts'">
+              <span [class]="'alert-row__icon alert-row__icon--' + alert.severity.toLowerCase()"><af-icon [name]="alert.severity === 'CRITICAL' ? 'alert-triangle' : 'bell'" [size]="18" /></span>
+              <div><strong>{{ alert.title }}</strong><p>{{ alert.message }}</p>@if (alert.dueAt) { <small>Vence {{ formatDate(alert.dueAt) }}</small> }</div>
+              <af-icon name="chevron-right" [size]="16" />
+            </a>
+          } @empty {
+            <p class="alerts-card__empty">No tienes alertas pendientes.</p>
+          }
+        </div>
+      </article>
+    }
+  </section>
+}

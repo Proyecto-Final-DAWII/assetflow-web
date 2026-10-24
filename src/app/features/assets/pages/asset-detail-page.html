@@ -1,0 +1,108 @@
+<nav class="breadcrumb" aria-label="Migas de pan">
+  <a routerLink="/assets"><af-icon name="arrow-left" [size]="16" /> Volver al inventario</a>
+</nav>
+
+@if (loading() && !asset()) {
+  <div class="detail-skeleton"><span></span><span></span><span></span></div>
+} @else if (error()) {
+  <section class="card"><af-empty-state icon="alert-triangle" title="No se pudo abrir el activo" [message]="error() ?? ''"><button type="button" class="button button--primary" (click)="load()">Reintentar</button></af-empty-state></section>
+} @else if (asset(); as item) {
+  <header class="asset-hero card">
+    <div class="asset-hero__main">
+      <span class="asset-hero__icon"><af-icon [name]="categoryIcon(item.category)" [size]="34" /></span>
+      <div>
+        <div class="asset-hero__meta"><span>{{ categoryLabels[item.category] }}</span><span>•</span><span>{{ item.code }}</span></div>
+        <h1>{{ item.name }}</h1>
+        <p>{{ item.brand }} {{ item.model }} · Serie {{ item.serialNumber }}</p>
+      </div>
+    </div>
+    <div class="asset-hero__actions">
+      <af-status-badge [status]="item.status" />
+      @if (canManage()) {
+        <a class="button button--secondary" [routerLink]="['/assets', item.id, 'edit']"><af-icon name="edit" [size]="16" /> Editar</a>
+      }
+    </div>
+  </header>
+
+  <div class="detail-layout">
+    <div class="detail-layout__main">
+      <section class="card detail-card">
+        <header class="card__header"><div><h2>Información general</h2><p>Identificación, compra y ubicación actual</p></div></header>
+        <dl class="detail-grid">
+          <div><dt><af-icon name="hash" [size]="16" /> Código interno</dt><dd>{{ item.code }}</dd></div>
+          <div><dt><af-icon name="cpu" [size]="16" /> Número de serie</dt><dd>{{ item.serialNumber }}</dd></div>
+          <div><dt><af-icon name="building" [size]="16" /> Marca y modelo</dt><dd>{{ item.brand }} {{ item.model }}</dd></div>
+          <div><dt><af-icon name="map-pin" [size]="16" /> Ubicación</dt><dd>{{ item.location }}</dd></div>
+          <div><dt><af-icon name="calendar" [size]="16" /> Fecha de adquisición</dt><dd>{{ formatDate(item.acquisitionDate) }}</dd></div>
+          <div><dt><af-icon name="shield-alert" [size]="16" /> Fin de garantía</dt><dd>{{ formatDate(item.warrantyExpiresAt) }}</dd></div>
+          <div><dt><af-icon name="assets" [size]="16" /> Valor de compra</dt><dd>{{ formatMoney(item.purchasePrice, item.currency) }}</dd></div>
+          <div><dt><af-icon name="briefcase" [size]="16" /> Área</dt><dd>{{ item.area || 'Sin área asignada' }}</dd></div>
+        </dl>
+        @if (item.notes) {
+          <div class="detail-notes"><strong>Notas internas</strong><p>{{ item.notes }}</p></div>
+        }
+      </section>
+
+      <section class="card assignment-card">
+        <header class="card__header"><div><h2>Asignación actual</h2><p>Responsable y custodia del equipo</p></div></header>
+        @if (item.assignedTo; as owner) {
+          <div class="assignment-card__content">
+            <span class="assignment-card__avatar">{{ owner.fullName.charAt(0) }}</span>
+            <div><strong>{{ owner.fullName }}</strong><p>{{ owner.email }}</p><small>{{ owner.area }}</small></div>
+            <span class="assignment-card__status"><af-icon name="check" [size]="15" /> Acta vigente</span>
+          </div>
+        } @else {
+          <div class="assignment-card__empty"><span><af-icon name="package-check" [size]="22" /></span><div><strong>Activo disponible</strong><p>No tiene un colaborador responsable en este momento.</p></div></div>
+        }
+      </section>
+
+      <section class="card history-card">
+        <header class="card__header"><div><h2>Historial del activo</h2><p>Trazabilidad completa de movimientos</p></div><span class="history-card__count">{{ history().length }} eventos</span></header>
+        <div class="history-timeline">
+          @for (movement of history(); track movement.id; let last = $last) {
+            <article class="history-timeline__item" [class.history-timeline__item--last]="last">
+              <span class="history-timeline__icon"><af-icon name="history" [size]="17" /></span>
+              <div><strong>{{ movement.title }}</strong><p>{{ movement.description }}</p><small>{{ formatDateTime(movement.occurredAt) }} · {{ movement.actor }}</small></div>
+            </article>
+          } @empty {
+            <p class="history-timeline__empty">Todavía no existen movimientos registrados.</p>
+          }
+        </div>
+      </section>
+    </div>
+
+    <aside class="detail-layout__side">
+      <section class="card qr-card">
+        <div class="qr-card__heading"><span><af-icon name="qr-code" [size]="21" /></span><div><h2>Identificación QR</h2><p>Escanea para abrir este activo</p></div></div>
+        <div class="qr-card__code"><af-qr-code [value]="qrValue()" [size]="190" /></div>
+        <strong>{{ item.code }}</strong>
+        <p>{{ item.serialNumber }}</p>
+        <button type="button" class="button button--secondary button--full" (click)="downloadQr(item)"><af-icon name="download" [size]="16" /> Descargar etiqueta</button>
+      </section>
+
+      <section class="card quick-stats">
+        <h2>Resumen operativo</h2>
+        <div><span><af-icon name="file" [size]="18" /></span><p><strong>{{ item.documentCount }}</strong><small>Documentos adjuntos</small></p></div>
+        <div><span><af-icon name="wrench" [size]="18" /></span><p><strong>{{ item.maintenanceCount }}</strong><small>Mantenimientos</small></p></div>
+        <div><span><af-icon name="history" [size]="18" /></span><p><strong>{{ history().length }}</strong><small>Movimientos</small></p></div>
+      </section>
+
+      <section class="card integration-card">
+        <div class="integration-card__heading"><span><af-icon name="upload" [size]="20" /></span><div><h2>Documentacion</h2><p>Facturas, garantias, actas y fotografias mediante el cliente <code>files</code>.</p></div></div>
+        @if (canManage()) {
+          <div class="document-upload">
+            <select aria-label="Tipo de documento" [value]="documentType()" (change)="updateDocumentType($event)"><option value="INVOICE">Factura</option><option value="WARRANTY">Garantia</option><option value="DELIVERY_ACT">Acta de entrega</option><option value="PHOTO">Fotografia</option><option value="OTHER">Otro</option></select>
+            <label class="button button--ghost button--full" [class.document-upload--busy]="uploadingDocument()"><af-icon name="upload" [size]="15" /> {{ uploadingDocument() ? 'Subiendo...' : 'Adjuntar documento' }}<input type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx" [disabled]="uploadingDocument()" (change)="uploadDocument($event)"></label>
+          </div>
+        }
+        <div class="document-list">
+          @for (document of documents(); track document.id) {
+            <article><span><af-icon name="file" [size]="16" /></span><div><strong>{{ document.fileName }}</strong><small>{{ documentTypeLabel(document.type) }} &middot; {{ formatFileSize(document.size) }}</small></div>@if (canManage()) { <button type="button" title="Eliminar documento" [disabled]="deletingDocumentId() === document.id" (click)="deleteDocument(document)"><af-icon name="trash" [size]="14" /></button> }</article>
+          } @empty {
+            <p class="document-list__empty">No hay documentos cargados.</p>
+          }
+        </div>
+      </section>
+    </aside>
+  </div>
+}

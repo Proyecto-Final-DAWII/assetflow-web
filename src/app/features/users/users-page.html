@@ -1,0 +1,71 @@
+<af-page-header
+  eyebrow="Control de acceso"
+  title="Usuarios y roles"
+  subtitle="Administra colaboradores, permisos y responsables de los activos de la organizacion."
+>
+  <div page-actions>
+    <button type="button" class="button button--secondary" (click)="load()"><af-icon name="refresh" [size]="17" /> Actualizar</button>
+    <button type="button" class="button button--primary" (click)="formOpen.set(!formOpen())"><af-icon name="plus" [size]="17" /> Nuevo usuario</button>
+  </div>
+</af-page-header>
+
+<section class="user-metrics" aria-label="Resumen de usuarios">
+  <article><span class="tone-primary"><af-icon name="users" [size]="20" /></span><div><strong>{{ items().length }}</strong><small>Usuarios registrados</small></div></article>
+  <article><span class="tone-success"><af-icon name="check" [size]="20" /></span><div><strong>{{ activeCount() }}</strong><small>Activos</small></div></article>
+  <article><span class="tone-admin"><af-icon name="shield-alert" [size]="20" /></span><div><strong>{{ adminCount() }}</strong><small>Administradores</small></div></article>
+  <article><span class="tone-info"><af-icon name="wrench" [size]="20" /></span><div><strong>{{ supportCount() }}</strong><small>Soporte TI</small></div></article>
+  <article><span class="tone-neutral"><af-icon name="laptop" [size]="20" /></span><div><strong>{{ assignedAssets() }}</strong><small>Activos asignados</small></div></article>
+</section>
+
+@if (formOpen()) {
+  <section class="card user-form">
+    <header><span><af-icon name="users" [size]="21" /></span><div><h2>Registrar usuario</h2><p>Los permisos de navegacion y operacion se asignan segun el rol seleccionado.</p></div></header>
+    <form [formGroup]="form" (ngSubmit)="create()">
+      <div class="form-grid">
+        <label class="field field--wide"><span>Nombre completo <b>*</b></span><input type="text" formControlName="fullName" placeholder="Nombre y apellidos">@if (form.controls.fullName.touched && form.controls.fullName.invalid) { <small>Ingresa un nombre valido.</small> }</label>
+        <label class="field field--wide"><span>Correo corporativo <b>*</b></span><input type="email" formControlName="email" placeholder="nombre@empresa.com">@if (form.controls.email.touched && form.controls.email.invalid) { <small>Ingresa un correo valido.</small> }</label>
+        <label class="field"><span>Rol <b>*</b></span><select formControlName="role"><option value="ADMIN">Administrador TI</option><option value="SUPPORT">Soporte TI</option><option value="EMPLOYEE">Colaborador</option></select></label>
+        <label class="field"><span>Area <b>*</b></span><input type="text" formControlName="area" placeholder="Tecnologia"></label>
+        <label class="field"><span>Cargo <b>*</b></span><input type="text" formControlName="position" placeholder="Analista de sistemas"></label>
+        <label class="field"><span>Telefono</span><input type="tel" formControlName="phone" placeholder="+51 999 999 999"></label>
+      </div>
+      <footer><button type="button" class="button button--secondary" (click)="formOpen.set(false)">Cancelar</button><button type="submit" class="button button--primary" [disabled]="saving()"><af-icon name="check" [size]="17" /> {{ saving() ? 'Guardando...' : 'Crear usuario' }}</button></footer>
+    </form>
+  </section>
+}
+
+<section class="card users-panel">
+  <header class="users-toolbar">
+    <div><h2>Directorio corporativo</h2><p>{{ filteredItems().length }} de {{ items().length }} usuarios</p></div>
+    <div class="users-toolbar__filters">
+      <label class="search-control"><span class="sr-only">Buscar usuario</span><af-icon name="search" [size]="16" /><input type="search" placeholder="Buscar nombre, correo, area o cargo" [value]="search()" (input)="updateSearch($event)"></label>
+      <label class="select-control"><span class="sr-only">Filtrar por rol</span><af-icon name="filter" [size]="16" /><select [value]="roleFilter()" (change)="updateRole($event)"><option value="">Todos los roles</option><option value="ADMIN">Administrador TI</option><option value="SUPPORT">Soporte TI</option><option value="EMPLOYEE">Colaborador</option></select></label>
+    </div>
+  </header>
+
+  @if (error()) {
+    <af-empty-state icon="alert-triangle" title="No se pudieron cargar los usuarios" [message]="error() ?? ''"><button type="button" class="button button--primary" (click)="load()">Reintentar</button></af-empty-state>
+  } @else if (loading()) {
+    <div class="users-skeleton">@for (row of [1,2,3,4,5]; track row) { <span></span> }</div>
+  } @else if (filteredItems().length === 0) {
+    <af-empty-state icon="users" title="No hay usuarios" message="No existen personas que coincidan con los filtros seleccionados." />
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Usuario</th><th>Rol</th><th>Area y cargo</th><th>Activos</th><th>Ultimo acceso</th><th>Estado</th></tr></thead>
+        <tbody>
+          @for (item of filteredItems(); track item.id) {
+            <tr>
+              <td><div class="user-cell"><span>{{ initials(item) }}</span><div><strong>{{ item.fullName }}</strong><small>{{ item.email }}</small></div></div></td>
+              <td><af-status-badge [status]="item.role" [label]="roleLabels[item.role]" /></td>
+              <td><strong class="cell-value">{{ item.area }}</strong><small class="cell-help">{{ item.position }}</small></td>
+              <td><span class="asset-count"><af-icon name="laptop" [size]="15" /> {{ item.assignedAssets }}</span></td>
+              <td><span class="date-cell">{{ formatDate(item.lastAccessAt) }}</span></td>
+              <td><af-status-badge [status]="item.status" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

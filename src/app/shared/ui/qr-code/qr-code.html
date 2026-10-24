@@ -1,0 +1,7 @@
+@if (dataUrl(); as source) {
+  <img [src]="source" [width]="size()" [height]="size()" alt="Código QR del activo">
+} @else if (failed()) {
+  <p>No fue posible generar el QR.</p>
+} @else {
+  <span class="qr-skeleton" [style.width.px]="size()" [style.height.px]="size()"></span>
+}

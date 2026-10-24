@@ -1,0 +1,78 @@
+<af-page-header
+  eyebrow="Mesa de ayuda"
+  title="Incidencias"
+  subtitle="Reporta problemas con los equipos y realiza seguimiento desde el diagnostico hasta su resolucion."
+>
+  <div page-actions>
+    <button type="button" class="button button--secondary" (click)="load()"><af-icon name="refresh" [size]="17" /> Actualizar</button>
+    <button type="button" class="button button--primary" (click)="formOpen.set(!formOpen())"><af-icon name="plus" [size]="17" /> Reportar problema</button>
+  </div>
+</af-page-header>
+
+<section class="incident-metrics" aria-label="Indicadores de incidencias">
+  <article><span class="tone-danger"><af-icon name="ticket" [size]="20" /></span><div><strong>{{ openCount() }}</strong><small>Abiertas</small></div></article>
+  <article><span class="tone-warning"><af-icon name="activity" [size]="20" /></span><div><strong>{{ inProgressCount() }}</strong><small>En atencion</small></div></article>
+  <article><span class="tone-critical"><af-icon name="alert-triangle" [size]="20" /></span><div><strong>{{ criticalCount() }}</strong><small>Criticas pendientes</small></div></article>
+  <article><span class="tone-success"><af-icon name="check" [size]="20" /></span><div><strong>{{ resolvedCount() }}</strong><small>Resueltas</small></div></article>
+</section>
+
+@if (formOpen()) {
+  <section class="card incident-form">
+    <header><span><af-icon name="ticket" [size]="21" /></span><div><h2>Nueva incidencia</h2><p>Describe el problema para que el equipo de TI pueda diagnosticarlo rapidamente.</p></div></header>
+    <form [formGroup]="form" (ngSubmit)="create()">
+      <div class="form-grid">
+        <label class="field field--wide"><span>Activo afectado <b>*</b></span><select formControlName="assetId"><option value="">Selecciona un activo</option>@for (asset of reportableAssets(); track asset.id) { <option [value]="asset.id">{{ asset.code }} &middot; {{ asset.name }}</option> }</select>@if (form.controls.assetId.touched && form.controls.assetId.invalid) { <small>Selecciona un activo.</small> }</label>
+        <label class="field"><span>Prioridad <b>*</b></span><select formControlName="priority"><option value="LOW">Baja</option><option value="MEDIUM">Media</option><option value="HIGH">Alta</option><option value="CRITICAL">Critica</option></select></label>
+        <label class="field field--full"><span>Titulo <b>*</b></span><input type="text" formControlName="title" placeholder="Ej. La bateria dura menos de una hora">@if (form.controls.title.touched && form.controls.title.invalid) { <small>Ingresa un titulo de al menos 5 caracteres.</small> }</label>
+        <label class="field field--full"><span>Descripcion <b>*</b></span><textarea rows="4" formControlName="description" placeholder="Indica cuando comenzo, que estabas haciendo y cualquier mensaje de error..."></textarea>@if (form.controls.description.touched && form.controls.description.invalid) { <small>Describe el problema con al menos 10 caracteres.</small> }</label>
+      </div>
+      @if (reportableAssets().length === 0) { <p class="form-notice"><af-icon name="info" [size]="16" /> No tienes activos asignados. Contacta al equipo de TI para registrar la incidencia.</p> }
+      <footer><button type="button" class="button button--secondary" (click)="formOpen.set(false)">Cancelar</button><button type="submit" class="button button--primary" [disabled]="saving() || reportableAssets().length === 0"><af-icon name="check" [size]="17" /> {{ saving() ? 'Enviando...' : 'Registrar incidencia' }}</button></footer>
+    </form>
+  </section>
+}
+
+<section class="card incidents-panel">
+  <header class="incidents-toolbar">
+    <div><h2>{{ isManager() ? 'Bandeja de incidencias' : 'Mis incidencias' }}</h2><p>{{ visibleItems().length }} registros visibles</p></div>
+    <div class="incidents-toolbar__filters">
+      <label class="search-control"><span class="sr-only">Buscar incidencia</span><af-icon name="search" [size]="16" /><input type="search" placeholder="Buscar codigo, activo o asunto" [value]="search()" (input)="updateSearch($event)"></label>
+      <label class="select-control"><span class="sr-only">Filtrar por estado</span><af-icon name="filter" [size]="16" /><select [value]="statusFilter()" (change)="updateFilter($event)"><option value="">Todos los estados</option><option value="OPEN">Abiertas</option><option value="IN_REVIEW">En revision</option><option value="IN_MAINTENANCE">En mantenimiento</option><option value="RESOLVED">Resueltas</option><option value="CLOSED">Cerradas</option></select></label>
+    </div>
+  </header>
+
+  @if (error()) {
+    <af-empty-state icon="alert-triangle" title="No se pudieron cargar las incidencias" [message]="error() ?? ''"><button type="button" class="button button--primary" (click)="load()">Reintentar</button></af-empty-state>
+  } @else if (loading()) {
+    <div class="incident-skeleton">@for (row of [1,2,3,4]; track row) { <span></span> }</div>
+  } @else if (visibleItems().length === 0) {
+    <af-empty-state icon="ticket" title="No hay incidencias" message="No existen reportes que coincidan con los filtros seleccionados." />
+  } @else {
+    <div class="incident-list">
+      @for (item of visibleItems(); track item.id) {
+        <article class="incident-item" [class.incident-item--unresolved]="item.status !== 'CLOSED' && item.status !== 'RESOLVED'">
+          <div class="incident-item__accent"></div>
+          <div class="incident-item__main">
+            <div class="incident-item__heading">
+              <div class="incident-item__code"><span>{{ item.code }}</span><af-status-badge [status]="item.priority" [label]="priorityLabels[item.priority]" /></div>
+              <span class="incident-item__date"><af-icon name="clock" [size]="14" /> {{ formatDateTime(item.createdAt) }}</span>
+            </div>
+            <h3>{{ item.title }}</h3><p>{{ item.description }}</p>
+            <div class="incident-item__meta">
+              <a [routerLink]="['/assets', item.assetId]"><af-icon name="laptop" [size]="15" /> {{ item.assetCode }} &middot; {{ item.assetName }}</a>
+              <span><af-icon name="users" [size]="15" /> {{ item.reportedBy }}</span>
+              @if (item.assignedTo) { <span><af-icon name="user-check" [size]="15" /> {{ item.assignedTo }}</span> }
+            </div>
+          </div>
+          <div class="incident-item__actions">
+            @if (isManager()) {
+              <label class="status-select"><span>Estado</span><select [value]="item.status" (change)="changeStatus(item, $event)"><option value="OPEN">Abierto</option><option value="IN_REVIEW">En revision</option><option value="IN_MAINTENANCE">En mantenimiento</option><option value="RESOLVED">Resuelto</option><option value="CLOSED">Cerrado</option></select></label>
+            } @else {
+              <af-status-badge [status]="item.status" [label]="statusLabels[item.status]" />
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

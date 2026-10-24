@@ -1,0 +1,61 @@
+<af-page-header
+  eyebrow="Administracion tecnica"
+  title="Configuracion e integracion"
+  subtitle="Consulta el modo de ejecucion, los clientes HTTP y el catalogo centralizado de endpoints."
+>
+  <div page-actions><button type="button" class="button button--primary" [disabled]="healthStatus() === 'TESTING'" (click)="testConnection()"><af-icon name="activity" [size]="17" /> {{ healthStatus() === 'TESTING' ? 'Probando...' : 'Probar conexion' }}</button></div>
+</af-page-header>
+
+<section class="settings-grid settings-grid--summary">
+  <article class="card summary-card"><span class="summary-card__icon"><af-icon name="settings" [size]="23" /></span><div><small>Aplicacion</small><strong>{{ config.app.name }} {{ config.app.version }}</strong><p>{{ config.app.companyName }} &middot; {{ config.app.locale }}</p></div></article>
+  <article class="card summary-card"><span class="summary-card__icon"><af-icon name="server" [size]="23" /></span><div><small>Modo de datos</small><strong>{{ config.api.useMocks ? 'Demo / Mocks' : 'Backend real' }}</strong><p>Timeout global: {{ config.api.timeoutMs }} ms</p></div><span [class]="'config-pill config-pill--' + (config.api.useMocks ? 'warning' : 'success')">{{ config.api.useMocks ? 'MOCK' : 'LIVE' }}</span></article>
+  <article class="card summary-card"><span class="summary-card__icon"><af-icon name="activity" [size]="23" /></span><div><small>Estado</small><strong>{{ healthStatus() === 'ONLINE' ? 'Disponible' : healthStatus() === 'OFFLINE' ? 'Sin conexion' : healthStatus() === 'TESTING' ? 'Comprobando' : 'No verificado' }}</strong><p>{{ healthMessage() }}</p></div><i [class]="'health-dot health-dot--' + healthStatus().toLowerCase()"></i></article>
+</section>
+
+<section class="settings-grid settings-grid--main">
+  <article class="card config-card">
+    <header><div><h2>Configuracion en tiempo de ejecucion</h2><p>Este archivo se carga antes de iniciar Angular y no requiere recompilar el frontend.</p></div><span class="file-chip"><af-icon name="file" [size]="15" /> public/config/app.config.json</span></header>
+    <div class="config-steps">
+      <div><span>1</span><div><strong>Cambia las URLs</strong><p>Edita <code>api.clients.*.baseUrl</code> para apuntar a tus microservicios o gateway.</p></div></div>
+      <div><span>2</span><div><strong>Activa el backend</strong><p>Cambia <code>api.useMocks</code> a <code>false</code>.</p></div></div>
+      <div><span>3</span><div><strong>Ajusta rutas</strong><p>Modifica cada entrada de <code>api.endpoints</code> sin tocar componentes ni repositorios.</p></div></div>
+    </div>
+    <pre><code>{{ '{' }}
+  "api": {{ '{' }}
+    "useMocks": false,
+    "clients": {{ '{' }}
+      "core": {{ '{' }} "baseUrl": "https://api.empresa.com/v1" {{ '}' }}
+    {{ '}' }}
+  {{ '}' }}
+{{ '}' }}</code></pre>
+  </article>
+
+  <article class="card features-card">
+    <header><div><h2>Capacidades</h2><p>Feature flags leidos desde el JSON.</p></div></header>
+    <div class="feature-list">
+      @for (feature of features; track feature.key) {
+        <div><span><af-icon [name]="feature.key === 'qr' ? 'qr-code' : feature.key === 'documents' ? 'file' : feature.key === 'audit' ? 'history' : 'bell'" [size]="18" /></span><div><strong>{{ featureLabel(feature.key) }}</strong><small>{{ feature.enabled ? 'Habilitado' : 'Deshabilitado' }}</small></div><i [class.feature-enabled]="feature.enabled"></i></div>
+      }
+    </div>
+  </article>
+</section>
+
+<section class="card clients-card">
+  <header><div><h2>Clientes API</h2><p>Cada endpoint referencia uno de estos clientes para construir su URL final.</p></div><span>{{ clients.length }} clientes</span></header>
+  <div class="client-grid">
+    @for (client of clients; track client.key) {
+      <article><span><af-icon name="server" [size]="19" /></span><div><small>{{ client.key }}</small><strong>{{ client.baseUrl }}</strong></div><button type="button" title="Copiar URL" (click)="copy(client.baseUrl, 'La URL')"><af-icon name="file" [size]="15" /></button></article>
+    }
+  </div>
+</section>
+
+<section class="card endpoint-card">
+  <header><div><h2>Catalogo de endpoints</h2><p>Mapa consumido por <code>ApiClientService.execute(endpointKey)</code>.</p></div><span>{{ endpoints.length }} operaciones</span></header>
+  <div class="table-scroll">
+    <table><thead><tr><th>Clave</th><th>Metodo</th><th>Cliente</th><th>Ruta</th><th></th></tr></thead><tbody>
+      @for (endpoint of endpoints; track endpoint.key) {
+        <tr><td><code>{{ endpoint.key }}</code></td><td><span [class]="'method method--' + endpoint.method.toLowerCase()">{{ endpoint.method }}</span></td><td>{{ endpoint.client }}</td><td><code>{{ endpoint.path }}</code></td><td><button type="button" class="copy-action" title="Copiar ruta" (click)="copy(endpoint.path, 'La ruta')"><af-icon name="file" [size]="14" /></button></td></tr>
+      }
+    </tbody></table>
+  </div>
+</section>

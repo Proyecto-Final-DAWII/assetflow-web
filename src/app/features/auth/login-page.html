@@ -1,0 +1,86 @@
+<main class="login-page">
+  <section class="login-hero" aria-labelledby="hero-title">
+    <div class="login-hero__brand">
+      <span class="login-hero__logo">A</span>
+      <div>
+        <strong>AssetFlow</strong>
+        <span>Gestión integral de activos TI</span>
+      </div>
+    </div>
+
+    <div class="login-hero__content">
+      <p class="login-hero__eyebrow">Control. Trazabilidad. Decisiones.</p>
+      <h1 id="hero-title">Todo el ciclo de vida tecnológico en un solo lugar.</h1>
+      <p>Administra inventario, asignaciones, mantenimientos, garantías y licencias con visibilidad completa.</p>
+
+      <div class="login-hero__features">
+        <article><span><af-icon name="qr-code" [size]="20" /></span><div><strong>Identificación con QR</strong><p>Consulta cada activo desde cualquier dispositivo.</p></div></article>
+        <article><span><af-icon name="history" [size]="20" /></span><div><strong>Trazabilidad completa</strong><p>Cada movimiento y responsable queda registrado.</p></div></article>
+        <article><span><af-icon name="bell" [size]="20" /></span><div><strong>Alertas inteligentes</strong><p>Anticipa vencimientos y mantenimientos críticos.</p></div></article>
+      </div>
+    </div>
+
+    <p class="login-hero__footer">AssetFlow {{ config.app.version }} · {{ config.app.companyName }}</p>
+  </section>
+
+  <section class="login-panel" aria-labelledby="login-title">
+    <div class="login-card">
+      <div class="login-card__heading">
+        <span class="login-card__mobile-logo">A</span>
+        <p>Bienvenido</p>
+        <h2 id="login-title">Inicia sesión en tu cuenta</h2>
+        <span>Ingresa tus credenciales corporativas para continuar.</span>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="login-card__error" role="alert">
+          <af-icon name="alert-triangle" [size]="18" />
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="login()" novalidate>
+        <label class="form-field">
+          <span>Correo corporativo</span>
+          <div class="form-field__control">
+            <af-icon name="mail" [size]="18" />
+            <input type="email" formControlName="email" autocomplete="username" placeholder="nombre@empresa.pe">
+          </div>
+          @if (form.controls.email.touched && form.controls.email.invalid) { <small>Ingresa un correo válido.</small> }
+        </label>
+
+        <label class="form-field">
+          <span>Contraseña</span>
+          <div class="form-field__control">
+            <af-icon name="key" [size]="18" />
+            <input [type]="passwordVisible() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" placeholder="Tu contraseña">
+            <button type="button" (click)="passwordVisible.update(value => !value)" [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <af-icon name="eye" [size]="18" />
+            </button>
+          </div>
+          @if (form.controls.password.touched && form.controls.password.invalid) { <small>La contraseña debe tener al menos 6 caracteres.</small> }
+        </label>
+
+        <button type="submit" class="login-card__submit" [disabled]="submitting()">
+          {{ submitting() ? 'Ingresando...' : 'Iniciar sesión' }}
+          <af-icon name="chevron-right" [size]="18" />
+        </button>
+      </form>
+
+      @if (config.api.useMocks && config.auth.allowDemoRoleLogin) {
+        <div class="demo-access">
+          <div class="demo-access__divider"><span>Acceso rápido de demostración</span></div>
+          <div class="demo-access__grid">
+            @for (option of demoRoles; track option.role) {
+              <button type="button" (click)="loginAs(option.role)" [disabled]="submitting()">
+                <span><af-icon [name]="option.icon" [size]="18" /></span>
+                <div><strong>{{ option.label }}</strong><small>{{ option.description }}</small></div>
+              </button>
+            }
+          </div>
+          <p>También puedes usar <strong>admin&#64;assetflow.pe</strong> con cualquier contraseña de 6 caracteres.</p>
+        </div>
+      }
+    </div>
+  </section>
+</main>

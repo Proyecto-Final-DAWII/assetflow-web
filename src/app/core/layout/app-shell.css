@@ -1,0 +1,4 @@
+.app-shell { min-height: 100vh; background: var(--color-page); }
+.app-shell__content { min-height: 100vh; margin-left: var(--sidebar-width); padding: calc(var(--topbar-height) + 1.65rem) clamp(1rem, 2.2vw, 2rem) 2rem; transition: margin-left 180ms ease; }
+.app-shell__overlay { position: fixed; z-index: 450; inset: 0; border: 0; background: rgba(6, 13, 25, 0.55); backdrop-filter: blur(2px); }
+@media (max-width: 960px) { .app-shell__content { margin-left: 0; } }

@@ -1,0 +1,77 @@
+<af-page-header
+  eyebrow="Software y suscripciones"
+  title="Licencias"
+  subtitle="Controla disponibilidad, asignaciones, costos y fechas de renovacion de las licencias corporativas."
+>
+  <div page-actions>
+    <button type="button" class="button button--secondary" (click)="load()">
+      <af-icon name="refresh" [size]="17" /> Actualizar
+    </button>
+  </div>
+</af-page-header>
+
+<section class="license-metrics" aria-label="Indicadores de licencias">
+  <article><span class="tone-primary"><af-icon name="key" [size]="20" /></span><div><strong>{{ totalSeats() }}</strong><small>Licencias totales</small></div></article>
+  <article><span class="tone-success"><af-icon name="user-check" [size]="20" /></span><div><strong>{{ assignedSeats() }}</strong><small>Asignadas ({{ utilization() }}%)</small></div></article>
+  <article><span class="tone-info"><af-icon name="package-check" [size]="20" /></span><div><strong>{{ availableSeats() }}</strong><small>Disponibles</small></div></article>
+  <article><span class="tone-warning"><af-icon name="clock" [size]="20" /></span><div><strong>{{ expiringCount() }}</strong><small>Proximas a vencer</small></div></article>
+  <article><span class="tone-neutral"><af-icon name="activity" [size]="20" /></span><div><strong>{{ formatMoney(annualCost(), 'PEN') }}</strong><small>Costo anual registrado</small></div></article>
+</section>
+
+<section class="card license-panel">
+  <header class="license-toolbar">
+    <div>
+      <h2>Catalogo de licencias</h2>
+      <p>{{ filteredItems().length }} de {{ items().length }} productos</p>
+    </div>
+    <div class="license-toolbar__filters">
+      <label class="search-control">
+        <span class="sr-only">Buscar licencia</span>
+        <af-icon name="search" [size]="16" />
+        <input type="search" placeholder="Buscar producto, fabricante o area" [value]="search()" (input)="updateSearch($event)">
+      </label>
+      <label class="select-control">
+        <span class="sr-only">Filtrar por estado</span>
+        <af-icon name="filter" [size]="16" />
+        <select [value]="statusFilter()" (change)="updateStatus($event)">
+          <option value="">Todos los estados</option>
+          <option value="ACTIVE">Activas</option>
+          <option value="EXPIRING">Por vencer</option>
+          <option value="EXPIRED">Vencidas</option>
+          <option value="SUSPENDED">Suspendidas</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  @if (error()) {
+    <af-empty-state icon="alert-triangle" title="No se pudieron cargar las licencias" [message]="error() ?? ''">
+      <button type="button" class="button button--primary" (click)="load()">Reintentar</button>
+    </af-empty-state>
+  } @else if (loading()) {
+    <div class="license-skeleton">@for (row of [1,2,3,4,5]; track row) { <span></span> }</div>
+  } @else if (filteredItems().length === 0) {
+    <af-empty-state icon="key" title="No hay resultados" message="Ajusta los filtros para encontrar la licencia que buscas." />
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Producto</th><th>Tipo</th><th>Uso</th><th>Vencimiento</th><th>Area responsable</th><th>Costo anual</th><th>Estado</th></tr></thead>
+        <tbody>
+          @for (item of filteredItems(); track item.id) {
+            <tr>
+              <td><div class="product-cell"><span><af-icon name="key" [size]="18" /></span><div><strong>{{ item.productName }}</strong><small>{{ item.vendor }}</small></div></div></td>
+              <td><span class="type-pill">{{ licenseType(item.type) }}</span></td>
+              <td>
+                <div class="seat-usage"><div><strong>{{ item.assignedSeats }} / {{ item.totalSeats }}</strong><span>{{ item.availableSeats }} libres</span></div><div class="seat-usage__bar"><span [style.width.%]="seatPercentage(item)"></span></div></div>
+              </td>
+              <td><strong class="cell-value">{{ formatDate(item.expiresAt) }}</strong><small class="cell-help">Inicio {{ formatDate(item.startsAt) }}</small></td>
+              <td><span class="area-cell"><af-icon name="building" [size]="15" /> {{ item.ownerArea }}</span></td>
+              <td><strong class="cell-value">{{ formatMoney(item.annualCost, item.currency) }}</strong></td>
+              <td><af-status-badge [status]="item.status" [label]="statusLabels[item.status]" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

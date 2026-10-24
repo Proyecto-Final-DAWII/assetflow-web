@@ -1,0 +1,207 @@
+{
+  "app": {
+    "name": "AssetFlow",
+    "companyName": "Tu organizaci\u00f3n",
+    "version": "0.1.0",
+    "locale": "es-PE",
+    "currency": "PEN",
+    "dateFormat": "dd/MM/yyyy"
+  },
+  "api": {
+    "useMocks": false,
+    "timeoutMs": 20000,
+    "clients": {
+      "core": {
+        "baseUrl": "https://api.example.com/core/v1"
+      },
+      "identity": {
+        "baseUrl": "https://api.example.com/identity/v1"
+      },
+      "files": {
+        "baseUrl": "https://api.example.com/files/v1"
+      }
+    },
+    "endpoints": {
+      "health.check": {
+        "client": "core",
+        "method": "GET",
+        "path": "/health"
+      },
+      "auth.login": {
+        "client": "identity",
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      "auth.logout": {
+        "client": "identity",
+        "method": "POST",
+        "path": "/auth/logout"
+      },
+      "auth.profile": {
+        "client": "identity",
+        "method": "GET",
+        "path": "/auth/me"
+      },
+      "dashboard.summary": {
+        "client": "core",
+        "method": "GET",
+        "path": "/dashboard/summary"
+      },
+      "assets.list": {
+        "client": "core",
+        "method": "GET",
+        "path": "/assets"
+      },
+      "assets.detail": {
+        "client": "core",
+        "method": "GET",
+        "path": "/assets/{id}"
+      },
+      "assets.create": {
+        "client": "core",
+        "method": "POST",
+        "path": "/assets"
+      },
+      "assets.update": {
+        "client": "core",
+        "method": "PUT",
+        "path": "/assets/{id}"
+      },
+      "assets.delete": {
+        "client": "core",
+        "method": "DELETE",
+        "path": "/assets/{id}"
+      },
+      "assets.history": {
+        "client": "core",
+        "method": "GET",
+        "path": "/assets/{id}/history"
+      },
+      "assignments.list": {
+        "client": "core",
+        "method": "GET",
+        "path": "/assignments"
+      },
+      "assignments.create": {
+        "client": "core",
+        "method": "POST",
+        "path": "/assignments"
+      },
+      "assignments.return": {
+        "client": "core",
+        "method": "POST",
+        "path": "/assignments/{id}/return"
+      },
+      "maintenance.list": {
+        "client": "core",
+        "method": "GET",
+        "path": "/maintenance"
+      },
+      "maintenance.create": {
+        "client": "core",
+        "method": "POST",
+        "path": "/maintenance"
+      },
+      "maintenance.update": {
+        "client": "core",
+        "method": "PUT",
+        "path": "/maintenance/{id}"
+      },
+      "maintenance.complete": {
+        "client": "core",
+        "method": "POST",
+        "path": "/maintenance/{id}/complete"
+      },
+      "licenses.list": {
+        "client": "core",
+        "method": "GET",
+        "path": "/licenses"
+      },
+      "licenses.create": {
+        "client": "core",
+        "method": "POST",
+        "path": "/licenses"
+      },
+      "licenses.update": {
+        "client": "core",
+        "method": "PUT",
+        "path": "/licenses/{id}"
+      },
+      "incidents.list": {
+        "client": "core",
+        "method": "GET",
+        "path": "/incidents"
+      },
+      "incidents.create": {
+        "client": "core",
+        "method": "POST",
+        "path": "/incidents"
+      },
+      "incidents.update": {
+        "client": "core",
+        "method": "PATCH",
+        "path": "/incidents/{id}"
+      },
+      "alerts.list": {
+        "client": "core",
+        "method": "GET",
+        "path": "/alerts"
+      },
+      "alerts.markRead": {
+        "client": "core",
+        "method": "PATCH",
+        "path": "/alerts/{id}/read"
+      },
+      "alerts.markAllRead": {
+        "client": "core",
+        "method": "PATCH",
+        "path": "/alerts/read-all"
+      },
+      "users.list": {
+        "client": "identity",
+        "method": "GET",
+        "path": "/users"
+      },
+      "users.create": {
+        "client": "identity",
+        "method": "POST",
+        "path": "/users"
+      },
+      "users.update": {
+        "client": "identity",
+        "method": "PUT",
+        "path": "/users/{id}"
+      },
+      "documents.list": {
+        "client": "files",
+        "method": "GET",
+        "path": "/assets/{assetId}/documents"
+      },
+      "documents.upload": {
+        "client": "files",
+        "method": "POST",
+        "path": "/assets/{assetId}/documents"
+      },
+      "documents.download": {
+        "client": "files",
+        "method": "GET",
+        "path": "/documents/{id}/download"
+      },
+      "documents.delete": {
+        "client": "files",
+        "method": "DELETE",
+        "path": "/documents/{id}"
+      }
+    }
+  },
+  "auth": {
+    "storageKey": "assetflow.session",
+    "allowDemoRoleLogin": true
+  },
+  "features": {
+    "qr": true,
+    "documents": true,
+    "audit": true,
+    "notifications": true
+  }
+}

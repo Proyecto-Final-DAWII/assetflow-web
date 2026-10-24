@@ -1,0 +1,16 @@
+<nav class="pagination" aria-label="Paginación">
+  <p class="pagination__summary">Mostrando {{ rangeStart() }}–{{ rangeEnd() }} de {{ total() }}</p>
+  <div class="pagination__controls">
+    <button type="button" class="pagination__button" [disabled]="page() === 0" (click)="goTo(page() - 1)" aria-label="Página anterior">
+      <af-icon name="chevron-right" [size]="17" class="pagination__previous-icon" />
+    </button>
+    @for (item of visiblePages(); track item) {
+      <button type="button" class="pagination__button" [class.pagination__button--active]="item === page()" (click)="goTo(item)" [attr.aria-current]="item === page() ? 'page' : null">
+        {{ item + 1 }}
+      </button>
+    }
+    <button type="button" class="pagination__button" [disabled]="page() + 1 >= totalPages()" (click)="goTo(page() + 1)" aria-label="Página siguiente">
+      <af-icon name="chevron-right" [size]="17" />
+    </button>
+  </div>
+</nav>

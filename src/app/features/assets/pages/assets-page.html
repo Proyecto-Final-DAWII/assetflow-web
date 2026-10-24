@@ -1,0 +1,103 @@
+<af-page-header
+  eyebrow="Inventario"
+  title="Activos tecnológicos"
+  subtitle="Registra, consulta y controla cada equipo durante todo su ciclo de vida."
+>
+  @if (canManage()) {
+    <a page-actions class="button button--primary" routerLink="/assets/new">
+      <af-icon name="plus" [size]="17" /> Registrar activo
+    </a>
+  }
+</af-page-header>
+
+<section class="asset-summary" aria-label="Resumen del inventario mostrado">
+  <article><span><af-icon name="assets" [size]="19" /></span><div><strong>{{ store.page().total }}</strong><small>Resultados encontrados</small></div></article>
+  <article><span><af-icon name="package-check" [size]="19" /></span><div><strong>{{ metricValue('available') }}</strong><small>Disponibles globales</small></div></article>
+  <article><span><af-icon name="user-check" [size]="19" /></span><div><strong>{{ metricValue('assigned') }}</strong><small>Activos asignados</small></div></article>
+  <article><span><af-icon name="wrench" [size]="19" /></span><div><strong>{{ metricValue('maintenance') }}</strong><small>En mantenimiento</small></div></article>
+</section>
+
+<section class="card assets-card">
+  <div class="assets-toolbar">
+    <label class="search-control">
+      <span class="sr-only">Buscar activos</span>
+      <af-icon name="search" [size]="18" />
+      <input type="search" [formControl]="searchControl" placeholder="Buscar por código, serie, marca o modelo">
+    </label>
+
+    <label class="select-control">
+      <af-icon name="activity" [size]="17" />
+      <select [value]="store.filters().status" (change)="setStatus($event)" aria-label="Filtrar por estado">
+        <option value="">Todos los estados</option>
+        @for (status of statuses; track status) { <option [value]="status">{{ statusLabels[status] }}</option> }
+      </select>
+      <af-icon name="chevron-down" [size]="15" />
+    </label>
+
+    <label class="select-control">
+      <af-icon name="filter" [size]="17" />
+      <select [value]="store.filters().category" (change)="setCategory($event)" aria-label="Filtrar por categoría">
+        <option value="">Todas las categorías</option>
+        @for (category of categories; track category) { <option [value]="category">{{ categoryLabels[category] }}</option> }
+      </select>
+      <af-icon name="chevron-down" [size]="15" />
+    </label>
+
+    @if (store.filters().search || store.filters().status || store.filters().category) {
+      <button type="button" class="button button--ghost" (click)="clearFilters()"><af-icon name="x" [size]="16" /> Limpiar</button>
+    }
+  </div>
+
+  @if (store.error()) {
+    <af-empty-state icon="alert-triangle" title="No se pudo consultar el inventario" [message]="store.error() ?? ''">
+      <button type="button" class="button button--primary" (click)="store.load()">Reintentar</button>
+    </af-empty-state>
+  } @else if (store.loading() && store.page().items.length === 0) {
+    <div class="table-skeleton">
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) { <span></span> }
+    </div>
+  } @else if (store.page().items.length === 0) {
+    <af-empty-state icon="search" title="No encontramos activos" message="Prueba con otros criterios de búsqueda o limpia los filtros aplicados.">
+      <button type="button" class="button button--secondary" (click)="clearFilters()">Limpiar filtros</button>
+    </af-empty-state>
+  } @else {
+    <div class="table-responsive">
+      <table>
+        <caption class="sr-only">Listado de activos tecnológicos</caption>
+        <thead><tr><th>Activo</th><th>Categoría</th><th>Serie</th><th>Responsable / ubicación</th><th>Estado</th><th>Garantía</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+        <tbody>
+          @for (asset of store.page().items; track asset.id) {
+            <tr>
+              <td>
+                <a class="asset-cell" [routerLink]="['/assets', asset.id]">
+                  <span class="asset-cell__icon"><af-icon [name]="categoryIcon(asset.category)" [size]="21" /></span>
+                  <span><strong>{{ asset.name }}</strong><small>{{ asset.code }} · {{ asset.brand }}</small></span>
+                </a>
+              </td>
+              <td><span class="category-text">{{ categoryLabels[asset.category] }}</span></td>
+              <td><code>{{ asset.serialNumber }}</code></td>
+              <td>
+                <div class="owner-cell">
+                  @if (asset.assignedTo) { <strong>{{ asset.assignedTo.fullName }}</strong><small>{{ asset.assignedTo.area }}</small> }
+                  @else { <strong>{{ asset.location }}</strong><small>Sin responsable asignado</small> }
+                </div>
+              </td>
+              <td><af-status-badge [status]="asset.status" /></td>
+              <td><span class="date-cell">{{ formatDate(asset.warrantyExpiresAt) }}</span></td>
+              <td>
+                <a class="icon-button" [routerLink]="['/assets', asset.id]" aria-label="Ver detalle de {{ asset.name }}"><af-icon name="chevron-right" [size]="18" /></a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <af-pagination
+      [page]="store.page().page"
+      [size]="store.page().size"
+      [total]="store.page().total"
+      [totalPages]="store.page().totalPages"
+      (pageChange)="store.setPage($event)"
+    />
+  }
+</section>

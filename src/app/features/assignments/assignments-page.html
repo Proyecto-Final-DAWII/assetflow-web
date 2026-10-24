@@ -1,0 +1,49 @@
+<af-page-header eyebrow="Custodia" title="Asignaciones y devoluciones" subtitle="Controla quién tiene cada activo, desde cuándo y en qué condiciones fue entregado.">
+  <button page-actions type="button" class="button button--primary" (click)="formOpen.set(!formOpen())"><af-icon [name]="formOpen() ? 'x' : 'plus'" [size]="17" /> {{ formOpen() ? 'Cerrar' : 'Nueva asignación' }}</button>
+</af-page-header>
+
+<section class="assignment-metrics">
+  <article><span class="metric-icon metric-icon--primary"><af-icon name="user-check" [size]="20" /></span><div><strong>{{ activeCount() }}</strong><small>Asignaciones activas</small></div></article>
+  <article><span class="metric-icon metric-icon--success"><af-icon name="return" [size]="20" /></span><div><strong>{{ returnedCount() }}</strong><small>Devoluciones históricas</small></div></article>
+  <article><span class="metric-icon metric-icon--danger"><af-icon name="clock" [size]="20" /></span><div><strong>{{ overdueCount() }}</strong><small>Devoluciones vencidas</small></div></article>
+  <article><span class="metric-icon metric-icon--info"><af-icon name="package-check" [size]="20" /></span><div><strong>{{ availableAssets().length }}</strong><small>Activos disponibles</small></div></article>
+</section>
+
+@if (formOpen()) {
+  <section class="card assignment-form-card">
+    <header><span><af-icon name="user-check" [size]="21" /></span><div><h2>Registrar asignación</h2><p>Selecciona un activo disponible y el colaborador responsable.</p></div></header>
+    <form [formGroup]="form" (ngSubmit)="create()">
+      <div class="form-grid">
+        <label class="field field--wide"><span>Activo disponible <b>*</b></span><select formControlName="assetId"><option value="">Selecciona un activo</option>@for (asset of availableAssets(); track asset.id) { <option [value]="asset.id">{{ asset.code }} · {{ asset.name }}</option> }</select></label>
+        <label class="field field--wide"><span>Colaborador <b>*</b></span><select formControlName="userId"><option value="">Selecciona un colaborador</option>@for (user of users(); track user.id) { <option [value]="user.id">{{ user.fullName }} · {{ user.area }}</option> }</select></label>
+        <label class="field"><span>Fecha de entrega <b>*</b></span><input type="date" formControlName="assignedAt"></label>
+        <label class="field"><span>Devolución estimada</span><input type="date" formControlName="expectedReturnAt"></label>
+        <label class="field field--full"><span>Observaciones</span><textarea rows="3" formControlName="notes" placeholder="Accesorios entregados, estado físico u otras observaciones..."></textarea></label>
+      </div>
+      <footer><button type="button" class="button button--secondary" (click)="formOpen.set(false)">Cancelar</button><button type="submit" class="button button--primary" [disabled]="saving() || availableAssets().length === 0"><af-icon name="check" [size]="17" /> {{ saving() ? 'Guardando...' : 'Confirmar asignación' }}</button></footer>
+    </form>
+  </section>
+}
+
+<section class="card assignments-card">
+  <header class="list-header"><div><h2>Historial de asignaciones</h2><p>{{ items().length }} movimientos de custodia registrados</p></div><button type="button" class="button button--ghost" (click)="load()"><af-icon name="refresh" [size]="16" /> Actualizar</button></header>
+  @if (error()) {
+    <af-empty-state icon="alert-triangle" title="No se pudieron cargar las asignaciones" [message]="error() ?? ''"><button type="button" class="button button--primary" (click)="load()">Reintentar</button></af-empty-state>
+  } @else if (loading()) {
+    <div class="list-skeleton">@for (item of [1,2,3,4,5]; track item) { <span></span> }</div>
+  } @else if (items().length === 0) {
+    <af-empty-state icon="user-check" title="Sin asignaciones" message="Registra la primera entrega de un activo a un colaborador." />
+  } @else {
+    <div class="table-responsive"><table><caption class="sr-only">Historial de asignaciones</caption><thead><tr><th>Activo</th><th>Colaborador</th><th>Entrega</th><th>Devolución</th><th>Entregado por</th><th>Estado</th><th></th></tr></thead><tbody>
+      @for (assignment of items(); track assignment.id) {
+        <tr>
+          <td><a class="asset-link" [routerLink]="['/assets', assignment.assetId]"><span><af-icon name="laptop" [size]="19" /></span><div><strong>{{ assignment.assetName }}</strong><small>{{ assignment.assetCode }}</small></div></a></td>
+          <td><div class="person-cell"><span>{{ assignment.collaborator.fullName.charAt(0) }}</span><div><strong>{{ assignment.collaborator.fullName }}</strong><small>{{ assignment.collaborator.area }}</small></div></div></td>
+          <td>{{ formatDate(assignment.assignedAt) }}</td><td>{{ formatDate(assignment.returnedAt || assignment.expectedReturnAt) }}</td><td>{{ assignment.deliveredBy }}</td>
+          <td><af-status-badge [status]="assignment.status" /></td>
+          <td>@if (assignment.status === 'ACTIVE') { <button type="button" class="table-action" (click)="returnAsset(assignment)"><af-icon name="return" [size]="15" /> Registrar devolución</button> }</td>
+        </tr>
+      }
+    </tbody></table></div>
+  }
+</section>
